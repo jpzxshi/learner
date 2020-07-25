@@ -17,7 +17,7 @@ class LinearModule(Module):
         self.params = self.__init_params()
         
     def forward(self, pqh):
-        p, q, h = pqh[0], pqh[1], pqh[2]
+        p, q, h = pqh
         for i in range(self.layers):
             S = self.params['S{}'.format(i + 1)]
             if i % 2 == 0:
@@ -49,7 +49,7 @@ class ActivationModule(Module):
         self.params = self.__init_params()
         
     def forward(self, pqh):
-        p, q, h = pqh[0], pqh[1], pqh[2]
+        p, q, h = pqh
         if self.mode == 'up':
             return p + self.act(q) * self.params['a'] * h, q
         elif self.mode == 'low':
@@ -76,7 +76,7 @@ class GradientModule(Module):
         self.params = self.__init_params()
         
     def forward(self, pqh):
-        p, q, h = pqh[0], pqh[1], pqh[2]
+        p, q, h = pqh
         if self.mode == 'up':
             gradH = (self.act(q @ self.params['K'] + self.params['b']) * self.params['a']) @ self.params['K'].t()
             return p + gradH * h, q

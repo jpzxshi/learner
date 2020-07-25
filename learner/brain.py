@@ -117,10 +117,10 @@ class Brain:
             path = './outputs/' + time.strftime('%Y-%m-%d-%H-%M-%S',time.localtime(time.time()))
         if not os.path.isdir(path): os.makedirs(path)
         if data:
-            np.savetxt(path + '/X_train.txt', self.data.X_train_np)
-            np.savetxt(path + '/y_train.txt', self.data.y_train_np)
-            np.savetxt(path + '/X_test.txt', self.data.X_test_np)
-            np.savetxt(path + '/y_test.txt', self.data.y_test_np)
+            np.save(path + '/X_train', self.data.X_train_np)
+            np.save(path + '/y_train', self.data.y_train_np)
+            np.save(path + '/X_test', self.data.X_test_np)
+            np.save(path + '/y_test', self.data.y_test_np)
         if best_model:
             torch.save(self.best_model, path + '/model_best.pkl')
         if loss_history:
