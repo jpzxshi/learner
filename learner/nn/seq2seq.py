@@ -8,9 +8,9 @@ from .module import StructureNN
 class S2S(StructureNN):
     '''Seq2seq model.
     Input: [batch size, len_in, dim_in]
-    Output: [batch szie, len_out, dim_out]
+    Output: [batch size, len_out, dim_out]
     '''
-    def __init__(self, dim_in, len_in, dim_out, len_out, hidden_size=10, cell='GRU'):
+    def __init__(self, dim_in, len_in, dim_out, len_out, hidden_size=10, cell='LSTM'):
         super(S2S, self).__init__()
         self.dim_in = dim_in
         self.len_in = len_in
