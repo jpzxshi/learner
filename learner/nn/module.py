@@ -112,6 +112,8 @@ class StructureNN(Module):
         super(StructureNN, self).__init__()
         
     def predict(self, x, returnnp=False):
+        if not isinstance(x, torch.Tensor):
+            x = torch.tensor(x, dtype=self.Dtype, device=self.Device)
         return self(x).cpu().detach().numpy() if returnnp else self(x)
     
 class LossNN(Module, abc.ABC):

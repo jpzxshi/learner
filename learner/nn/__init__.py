@@ -8,6 +8,7 @@ from .fnn import FNN
 from .hnn import HNN
 from .sympnet import LASympNet
 from .sympnet import GSympNet
+from .seq2seq import S2S
 
 __all__ = [
     'Module',
@@ -17,6 +18,7 @@ __all__ = [
     'HNN',
     'LASympNet',
     'GSympNet',
+    'S2S',
 ]
 
 
