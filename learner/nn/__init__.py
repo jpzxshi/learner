@@ -9,6 +9,7 @@ from .hnn import HNN
 from .sympnet import LASympNet
 from .sympnet import GSympNet
 from .seq2seq import S2S
+from .deeponet import DeepONet
 
 __all__ = [
     'Module',
@@ -19,6 +20,7 @@ __all__ = [
     'LASympNet',
     'GSympNet',
     'S2S',
+    'DeepONet',
 ]
 
 
