@@ -1,1 +1,2 @@
-# Learner: a simple deep learning framework based on torch.
+# Learner
+A simple deep learning framework based on torch.
