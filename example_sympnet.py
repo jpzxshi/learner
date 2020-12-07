@@ -37,7 +37,7 @@ def plot(data, net):
     plt.plot(flow_pred[:, 0], flow_pred[:, 1], color='r', label='Predicted flow', zorder=1)
     plt.scatter(data.X_train_np[:, 0], data.X_train_np[:, 1], color='b', label='Learned data', zorder=2)
     plt.legend()
-    plt.savefig('pendulum.pdf')
+    plt.savefig('sympnet.pdf')
 
 def main():
     device = 'cpu' # 'cpu' or 'gpu'

@@ -127,7 +127,7 @@ class Brain:
             np.savetxt(path + '/loss.txt', self.loss_history)
         if info is not None:
             with open(path + '/info.txt', 'w') as f:
-                for item in info:
+                for item in info.items():
                     f.write('{}: {}\n'.format(item[0], str(item[1])))
         for key, arg in kwargs.items():
             np.savetxt(path + '/' + key + '.txt', arg)        
@@ -153,7 +153,8 @@ class Brain:
         if isinstance(self.net, LossNN):
             self.__criterion = self.net.criterion
             if self.criterion is not None:
-                raise Warning('loss-oriented neural network has already implemented its loss function')
+                import warnings
+                warnings.warn('loss-oriented neural network has already implemented its loss function')
         elif self.criterion == 'MSE':
             self.__criterion = torch.nn.MSELoss()
         elif self.criterion == 'CrossEntropy':

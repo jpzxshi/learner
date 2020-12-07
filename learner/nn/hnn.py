@@ -28,6 +28,8 @@ class HNN(LossNN):
         return self.__integrator_loss(x0, x1, h)
     
     def predict(self, x0, h, steps=1, keepinitx=False, returnnp=False):
+        if not isinstance(x0, torch.Tensor):
+            x0 = torch.tensor(x0, dtype=self.dtype, device=self.device)
         N = max(int(h * 10), 1)
         solver = SV(self.modus['H'], None, iterations=10, order=4, N=N)
         res = solver.flow(x0, h, steps) if keepinitx else solver.flow(x0, h, steps)[..., 1:, :].squeeze()
@@ -37,7 +39,7 @@ class HNN(LossNN):
     def J(self):
         d = int(self.dim / 2)
         res = np.eye(self.dim, k=d) - np.eye(self.dim, k=-d)
-        return torch.tensor(res, dtype=self.Dtype, device=self.Device)
+        return torch.tensor(res, dtype=self.dtype, device=self.device)
     
     def __init_modules(self):
         modules = torch.nn.ModuleDict()

@@ -7,11 +7,11 @@ import torch
 class Data:
     '''Standard data format. 
     '''
-    def __init__(self):
-        self.X_train = None
-        self.y_train = None
-        self.X_test = None
-        self.y_test = None
+    def __init__(self, X_train=None, y_train=None, X_test=None, y_test=None):
+        self.X_train = X_train
+        self.y_train = y_train
+        self.X_test = X_test
+        self.y_test = y_test
         
         self.__device = None
         self.__dtype = None
@@ -28,35 +28,23 @@ class Data:
     def device(self, d):
         if d == 'cpu':
             self.__to_cpu()
+            self.__device = torch.device('cpu')
         elif d == 'gpu':
             self.__to_gpu()
+            self.__device = torch.device('cuda')
         else:
             raise ValueError
-        self.__device = d
     
     @dtype.setter     
     def dtype(self, d):
         if d == 'float':
             self.__to_float()
+            self.__dtype = torch.float32
         elif d == 'double':
             self.__to_double()
+            self.__dtype = torch.float64
         else:
             raise ValueError
-        self.__dtype = d
-    
-    @property
-    def Device(self):
-        if self.__device == 'cpu':
-            return torch.device('cpu')
-        elif self.__device == 'gpu':
-            return torch.device('cuda')
-    
-    @property
-    def Dtype(self):
-        if self.__dtype == 'float':
-            return torch.float32
-        elif self.__dtype == 'double':
-            return torch.float64
     
     @property
     def dim(self):

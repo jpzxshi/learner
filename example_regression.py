@@ -6,17 +6,6 @@ import matplotlib.pyplot as plt
 
 import learner as ln
 
-class RGData(ln.Data):
-    def __init__(self):
-        super(RGData, self).__init__()
-        self.__init_data()
-    
-    def __init_data(self):
-        self.X_train = (2 * np.pi * np.random.rand(30))[:, None]
-        self.y_train = np.sin(self.X_train)
-        self.X_test = np.linspace(0, 2 * np.pi, num=100)[:, None]
-        self.y_test = np.sin(self.X_test)
-        
 def plot(data, net):
     x = data.X_test_np
     f_true = data.y_test_np
@@ -40,7 +29,12 @@ def main():
     iterations = 20000
     print_every = 1000
     
-    data = RGData()
+    X_train = (2 * np.pi * np.random.rand(30))[:, None]
+    y_train = np.sin(X_train)
+    X_test = np.linspace(0, 2 * np.pi, num=100)[:, None]
+    y_test = np.sin(X_test)
+    
+    data = ln.Data(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
     net = ln.nn.FNN(data.dim, data.K, depth, width, activation)
     args = {
         'data': data,

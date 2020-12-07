@@ -94,12 +94,47 @@ class GradientModule(Module):
         params['b'] = nn.Parameter(torch.zeros([self.width]).requires_grad_(True))
         return params
     
+class ExtendedModule(Module):
+    '''Extended symplectic module.
+    '''
+    def __init__(self, dim, latent_dim, width, activation, mode):
+        super(ExtendedModule, self).__init__()
+        self.dim = dim
+        self.latent_dim = latent_dim
+        self.width = width
+        self.activation = activation
+        self.mode = mode
+        
+        self.params = self.__init_params()
+        
+    def forward(self, pqch):
+        p, q, c, h = pqch
+        if self.mode == 'up':
+            gradH = (self.act(q @ self.params['K1'] + c @ self.params['K2'] + self.params['b']) * self.params['a']) @ self.params['K1'].t()
+            return p + gradH * h, q, c
+        elif self.mode == 'low':
+            gradH = (self.act(p @ self.params['K1'] + c @ self.params['K2'] + self.params['b']) * self.params['a']) @ self.params['K1'].t()
+            return p, gradH * h + q, c
+        else:
+            raise ValueError
+            
+    def __init_params(self):
+        d, dc = self.latent_dim // 2, self.dim - self.latent_dim
+        params = nn.ParameterDict()
+        params['K1'] = nn.Parameter((torch.randn([d, self.width]) * 0.01).requires_grad_(True))
+        params['K2'] = nn.Parameter((torch.randn([dc, self.width]) * 0.01).requires_grad_(True))
+        params['a'] = nn.Parameter((torch.randn([self.width]) * 0.01).requires_grad_(True))
+        params['b'] = nn.Parameter(torch.zeros([self.width]).requires_grad_(True))
+        return params
+    
 class SympNet(StructureNN):
     def __init__(self):
         super(SympNet, self).__init__()
         self.dim = None
         
     def predict(self, xh, steps=1, keepinitx=False, returnnp=False):
+        if not isinstance(xh, torch.Tensor):
+            xh = torch.tensor(xh, dtype=self.dtype, device=self.device)
         dim = xh.size(-1)
         size = len(xh.size())
         if dim == self.dim:
@@ -187,4 +222,39 @@ class GSympNet(SympNet):
         for i in range(self.layers):
             mode = 'up' if i % 2 == 0 else 'low'
             modules['GradM{}'.format(i + 1)] = GradientModule(self.dim, self.width, self.activation, mode)
+        return modules
+    
+class ESympNet(SympNet):
+    '''E-SympNet.
+    Input: [num, dim] or [num, dim + 1]
+    Output: [num, dim]
+    '''
+    def __init__(self, dim, latent_dim, layers=3, width=20, activation='sigmoid'):
+        super(ESympNet, self).__init__()
+        self.dim = dim
+        self.latent_dim = latent_dim
+        self.layers = layers
+        self.width = width
+        self.activation = activation
+        
+        self.modus = self.__init_modules()
+        
+    def forward(self, pqch):
+        d = self.latent_dim // 2
+        if pqch.size(-1) == self.dim + 1:
+            p, q, c, h = pqch[..., :d], pqch[..., d:2*d], pqch[..., 2*d:-1], pqch[..., -1:]
+        elif pqch.size(-1) == self.dim:
+            p, q, c, h = pqch[..., :d], pqch[..., d:2*d], pqch[..., 2*d:], torch.ones_like(pqch[..., -1:])
+        else:
+            raise ValueError
+        for i in range(self.layers):
+            ExtM = self.modus['ExtM{}'.format(i + 1)]
+            p, q, c = ExtM([p, q, c, h])
+        return torch.cat([p, q, c], dim=-1)
+    
+    def __init_modules(self):
+        modules = nn.ModuleDict()
+        for i in range(self.layers):
+            mode = 'up' if i % 2 == 0 else 'low'
+            modules['ExtM{}'.format(i + 1)] = ExtendedModule(self.dim, self.latent_dim, self.width, self.activation, mode)
         return modules

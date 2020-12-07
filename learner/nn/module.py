@@ -27,35 +27,31 @@ class Module(torch.nn.Module):
     def device(self, d):
         if d == 'cpu':
             self.cpu()
+            for module in self.modules():
+                if isinstance(module, Module):
+                    module.__device = torch.device('cpu')
         elif d == 'gpu':
             self.cuda()
+            for module in self.modules():
+                if isinstance(module, Module):
+                    module.__device = torch.device('cuda')
         else:
             raise ValueError
-        self.__device = d
     
-    @dtype.setter    
+    @dtype.setter
     def dtype(self, d):
         if d == 'float':
-            self.to(torch.float)
+            self.to(torch.float32)
+            for module in self.modules():
+                if isinstance(module, Module):
+                    module.__dtype = torch.float32
         elif d == 'double':
-            self.to(torch.double)
+            self.to(torch.float64)
+            for module in self.modules():
+                if isinstance(module, Module):
+                    module.__dtype = torch.float64
         else:
             raise ValueError
-        self.__dtype = d
-
-    @property
-    def Device(self):
-        if self.__device == 'cpu':
-            return torch.device('cpu')
-        elif self.__device == 'gpu':
-            return torch.device('cuda')
-        
-    @property
-    def Dtype(self):
-        if self.__dtype == 'float':
-            return torch.float32
-        elif self.__dtype == 'double':
-            return torch.float64
 
     @property
     def act(self):
@@ -113,7 +109,7 @@ class StructureNN(Module):
         
     def predict(self, x, returnnp=False):
         if not isinstance(x, torch.Tensor):
-            x = torch.tensor(x, dtype=self.Dtype, device=self.Device)
+            x = torch.tensor(x, dtype=self.dtype, device=self.device)
         return self(x).cpu().detach().numpy() if returnnp else self(x)
     
 class LossNN(Module, abc.ABC):
