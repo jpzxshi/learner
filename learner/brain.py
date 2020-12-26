@@ -19,15 +19,15 @@ class Brain:
              print_every=1000, save=False, callback=None, dtype='float', device='cpu'):
         cls.brain = cls(data, net, criterion, optimizer, lr, iterations, batch_size, 
                          print_every, save, callback, dtype, device)
-        
+    
     @classmethod
     def Run(cls):
         cls.brain.run()
-        
+    
     @classmethod
     def Restore(cls):
         cls.brain.restore()
-        
+    
     @classmethod
     def Output(cls, data=True, best_model=True, loss_history=True, info=None, path=None, **kwargs):
         cls.brain.output(data, best_model, loss_history, info, path, **kwargs)
@@ -84,7 +84,7 @@ class Brain:
                 if torch.any(torch.isnan(loss)):
                     self.encounter_nan = True
                     print('Encountering nan, stop training', flush=True)
-                    return None                
+                    return None
                 if self.save:
                     if not os.path.exists('model'): os.mkdir('model')
                     torch.save(self.net, 'model/model{}.pkl'.format(i))
@@ -117,21 +117,26 @@ class Brain:
             path = './outputs/' + time.strftime('%Y-%m-%d-%H-%M-%S',time.localtime(time.time()))
         if not os.path.isdir(path): os.makedirs(path)
         if data:
-            np.save(path + '/X_train', self.data.X_train_np)
-            np.save(path + '/y_train', self.data.y_train_np)
-            np.save(path + '/X_test', self.data.X_test_np)
-            np.save(path + '/y_test', self.data.y_test_np)
+            def save_data(fname, data):
+                if isinstance(data, dict):
+                    np.savez_compressed(path + '/' + fname, **data)
+                else:
+                    np.save(path + '/' + fname, data)
+            save_data('X_train', self.data.X_train_np)
+            save_data('y_train', self.data.y_train_np)
+            save_data('X_test', self.data.X_test_np)
+            save_data('y_test', self.data.y_test_np)
         if best_model:
             torch.save(self.best_model, path + '/model_best.pkl')
         if loss_history:
             np.savetxt(path + '/loss.txt', self.loss_history)
         if info is not None:
             with open(path + '/info.txt', 'w') as f:
-                for item in info.items():
-                    f.write('{}: {}\n'.format(item[0], str(item[1])))
+                for key, arg in info.items():
+                    f.write('{}: {}\n'.format(key, str(arg)))
         for key, arg in kwargs.items():
-            np.savetxt(path + '/' + key + '.txt', arg)        
-            
+            np.savetxt(path + '/' + key + '.txt', arg)
+    
     def __init_brain(self):
         self.loss_history = None
         self.encounter_nan = False
@@ -142,13 +147,13 @@ class Brain:
         self.net.dtype = self.dtype
         self.__init_optimizer()
         self.__init_criterion()
-
+    
     def __init_optimizer(self):
         if self.optimizer == 'adam':
             self.__optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr)
         else:
             raise NotImplementedError
-            
+    
     def __init_criterion(self):
         if isinstance(self.net, LossNN):
             self.__criterion = self.net.criterion
@@ -160,4 +165,4 @@ class Brain:
         elif self.criterion == 'CrossEntropy':
             self.__criterion = cross_entropy_loss
         else:
-            raise NotImplementedError   
+            raise NotImplementedError

@@ -19,21 +19,17 @@ def timing(func):
         return result
     return wrapper
 
-def map_all(func):
+def map_elementwise(func):
     @wraps(func)
-    def wrapper(arg):
-        if isinstance(arg, list):
-            result = []
-            for value in arg:
-                result.append(wrapper(value))
-            return result
-        elif isinstance(arg, dict):
-            result = {}
-            for key, value in arg.items():
-                result[key] = wrapper(value)
-            return result
+    def wrapper(*args):
+        if len(args) == 0:
+            return None
+        elif isinstance(args[0], list):
+            return [wrapper(*[arg[i] for arg in args]) for i in range(len(args[0]))]
+        elif isinstance(args[0], dict):
+            return {key: wrapper(*[arg[key] for arg in args]) for key in args[0].keys()}
         else:
-            return func(arg)
+            return func(*args)
     return wrapper
 
 class lazy_property:

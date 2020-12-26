@@ -4,7 +4,7 @@
 import numpy as np
 import torch
 
-from ..utils import map_all
+from ..utils import map_elementwise
 
 class Data:
     '''Standard data format. 
@@ -19,8 +19,14 @@ class Data:
         self.__dtype = None
     
     def get_batch(self, batch_size):
-        mask = np.random.choice(self.X_train.size(0), batch_size, replace=False)
-        return self.X_train[mask], self.y_train[mask]
+        @map_elementwise
+        def batch_mask(X, num):
+            return np.random.choice(X.size(0), num, replace=False)
+        @map_elementwise
+        def batch(X, mask):
+            return X[mask]
+        mask = batch_mask(self.X_train, batch_size)
+        return batch(self.X_train, mask), batch(self.y_train, mask)
     
     @property
     def device(self):
@@ -83,7 +89,7 @@ class Data:
         return Data.to_np(self.y_test)
     
     @staticmethod
-    @map_all
+    @map_elementwise
     def to_np(d):
         if isinstance(d, np.ndarray) or d is None:
             return d
@@ -93,7 +99,7 @@ class Data:
             raise ValueError
     
     def __to_cpu(self):
-        @map_all
+        @map_elementwise
         def trans(d):
             if isinstance(d, np.ndarray):
                 return torch.DoubleTensor(d)
@@ -103,7 +109,7 @@ class Data:
             setattr(self, d, trans(getattr(self, d)))
     
     def __to_gpu(self):
-        @map_all
+        @map_elementwise
         def trans(d):
             if isinstance(d, np.ndarray):
                 return torch.cuda.DoubleTensor(d)
@@ -115,7 +121,7 @@ class Data:
     def __to_float(self):
         if self.device is None: 
             raise RuntimeError('device is not set')
-        @map_all
+        @map_elementwise
         def trans(d):
             if isinstance(d, torch.Tensor):
                 return d.float()
@@ -125,7 +131,7 @@ class Data:
     def __to_double(self):
         if self.device is None: 
             raise RuntimeError('device is not set')
-        @map_all
+        @map_elementwise
         def trans(d):
             if isinstance(d, torch.Tensor):
                 return d.double()

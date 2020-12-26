@@ -19,13 +19,6 @@ class PoissonData(ln.Data):
         
         self.__init_data()
         
-    def get_batch(self, batch_size):
-        X_batch, y_batch = {}, {}
-        for label in ['diff', 'x_0', 'x_1', '0_y', '1_y']:
-            mask = np.random.choice(self.train_num[label], batch_size[label], replace=False)
-            X_batch[label], y_batch[label] = self.X_train[label][mask], self.y_train[label][mask]
-        return X_batch, y_batch
-        
     def generate(self, num):
         X, y = {}, {}
         # positions
@@ -60,8 +53,8 @@ class PoissonPINN(ln.nn.LossNN):
         z = X['diff'].requires_grad_(True)
         u = self.net(z)
         u_g = grad(u, z)
-        u_x, u_y = u_g[..., :1], u_g[..., 1:]
-        u_xx, u_yy = grad(u_x, z)[..., :1], grad(u_y, z)[..., 1:]
+        u_x, u_y = u_g[:, :1], u_g[:, 1:]
+        u_xx, u_yy = grad(u_x, z)[:, :1], grad(u_y, z)[:, 1:]
         MSEd = mse(u_xx + u_yy, y['diff'])
         MSEb = (mse(self.net(X['x_0']), y['x_0']) + mse(self.net(X['x_1']), y['x_1']) + 
                 mse(self.net(X['0_y']), y['0_y']) + mse(self.net(X['1_y']), y['1_y']))
