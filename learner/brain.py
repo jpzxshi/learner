@@ -73,8 +73,8 @@ class Brain:
         loss_history = []
         for i in range(self.iterations + 1):
             if self.batch_size is not None:
-                mask = np.random.choice(self.data.X_train.size(0), self.batch_size, replace=False)
-                loss = self.__criterion(self.net(self.data.X_train[mask]), self.data.y_train[mask])
+                X_train, y_train = self.data.get_batch(self.batch_size)
+                loss = self.__criterion(self.net(X_train), y_train)
             else:
                 loss = self.__criterion(self.net(self.data.X_train), self.data.y_train)
             if i % self.print_every == 0 or i == self.iterations:

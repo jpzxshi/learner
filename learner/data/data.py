@@ -4,6 +4,8 @@
 import numpy as np
 import torch
 
+from ..utils import map_all
+
 class Data:
     '''Standard data format. 
     '''
@@ -16,10 +18,14 @@ class Data:
         self.__device = None
         self.__dtype = None
     
+    def get_batch(self, batch_size):
+        mask = np.random.choice(self.X_train.size(0), batch_size, replace=False)
+        return self.X_train[mask], self.y_train[mask]
+    
     @property
     def device(self):
         return self.__device
-        
+    
     @property
     def dtype(self):
         return self.__dtype
@@ -76,7 +82,8 @@ class Data:
     def y_test_np(self):
         return Data.to_np(self.y_test)
     
-    @staticmethod      
+    @staticmethod
+    @map_all
     def to_np(d):
         if isinstance(d, np.ndarray) or d is None:
             return d
@@ -86,29 +93,41 @@ class Data:
             raise ValueError
     
     def __to_cpu(self):
+        @map_all
+        def trans(d):
+            if isinstance(d, np.ndarray):
+                return torch.DoubleTensor(d)
+            elif isinstance(d, torch.Tensor):
+                return d.cpu()
         for d in ['X_train', 'y_train', 'X_test', 'y_test']:
-            if isinstance(getattr(self, d), np.ndarray):
-                setattr(self, d, torch.DoubleTensor(getattr(self, d)))
-            elif isinstance(getattr(self, d), torch.Tensor):
-                setattr(self, d, getattr(self, d).cpu())
+            setattr(self, d, trans(getattr(self, d)))
     
     def __to_gpu(self):
+        @map_all
+        def trans(d):
+            if isinstance(d, np.ndarray):
+                return torch.cuda.DoubleTensor(d)
+            elif isinstance(d, torch.Tensor):
+                return d.cuda()
         for d in ['X_train', 'y_train', 'X_test', 'y_test']:
-            if isinstance(getattr(self, d), np.ndarray):
-                setattr(self, d, torch.cuda.DoubleTensor(getattr(self, d)))
-            elif isinstance(getattr(self, d), torch.Tensor):
-                setattr(self, d, getattr(self, d).cuda())
+            setattr(self, d, trans(getattr(self, d)))
     
     def __to_float(self):
         if self.device is None: 
             raise RuntimeError('device is not set')
+        @map_all
+        def trans(d):
+            if isinstance(d, torch.Tensor):
+                return d.float()
         for d in ['X_train', 'y_train', 'X_test', 'y_test']:
-            if isinstance(getattr(self, d), torch.Tensor):
-                setattr(self, d, getattr(self, d).float())
+            setattr(self, d, trans(getattr(self, d)))
     
     def __to_double(self):
         if self.device is None: 
             raise RuntimeError('device is not set')
+        @map_all
+        def trans(d):
+            if isinstance(d, torch.Tensor):
+                return d.double()
         for d in ['X_train', 'y_train', 'X_test', 'y_test']:
-            if isinstance(getattr(self, d), torch.Tensor):
-                setattr(self, d, getattr(self, d).double())
+            setattr(self, d, trans(getattr(self, d)))

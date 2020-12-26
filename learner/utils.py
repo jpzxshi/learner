@@ -19,6 +19,23 @@ def timing(func):
         return result
     return wrapper
 
+def map_all(func):
+    @wraps(func)
+    def wrapper(arg):
+        if isinstance(arg, list):
+            result = []
+            for value in arg:
+                result.append(wrapper(value))
+            return result
+        elif isinstance(arg, dict):
+            result = {}
+            for key, value in arg.items():
+                result[key] = wrapper(value)
+            return result
+        else:
+            return func(arg)
+    return wrapper
+
 class lazy_property:
     def __init__(self, func): 
         self.func = func 
@@ -38,6 +55,9 @@ def softmax(x):
 #
 # Torch tools.
 #
+def mse(x, y):
+    return torch.nn.MSELoss()(x, y)
+
 def cross_entropy_loss(y_pred, y_label):
     if y_pred.size() == y_label.size():
         return torch.mean(-torch.sum(torch.log_softmax(y_pred, dim=-1) * y_label, dim=-1))
