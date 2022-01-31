@@ -3,7 +3,6 @@
 """
 from functools import wraps
 import time
-
 import numpy as np
 import torch
 
@@ -21,15 +20,29 @@ def timing(func):
 
 def map_elementwise(func):
     @wraps(func)
-    def wrapper(*args):
-        if len(args) == 0:
-            return None
-        elif isinstance(args[0], list):
-            return [wrapper(*[arg[i] for arg in args]) for i in range(len(args[0]))]
-        elif isinstance(args[0], dict):
-            return {key: wrapper(*[arg[key] for arg in args]) for key in args[0].keys()}
-        else:
-            return func(*args)
+    def wrapper(*args, **kwargs):
+        container, idx = None, None
+        for arg in args:
+            if type(arg) in (list, tuple, dict):
+                container, idx = type(arg), arg.keys() if type(arg) == dict else len(arg)
+                break
+        if container is None:
+            for value in kwargs.values():
+                if type(value) in (list, tuple, dict):
+                    container, idx = type(value), value.keys() if type(value) == dict else len(value)
+                    break
+        if container is None:
+            return func(*args, **kwargs)
+        elif container in (list, tuple):
+            get = lambda element, i: element[i] if type(element) is container else element
+            return container(wrapper(*[get(arg, i) for arg in args], 
+                                     **{key:get(value, i) for key, value in kwargs.items()}) 
+                             for i in range(idx))
+        elif container is dict:
+            get = lambda element, key: element[key] if type(element) is dict else element
+            return {key:wrapper(*[get(arg, key) for arg in args], 
+                                **{key_:get(value_, key) for key_, value_ in kwargs.items()}) 
+                    for key in idx}
     return wrapper
 
 class lazy_property:

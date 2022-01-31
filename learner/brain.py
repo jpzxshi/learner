@@ -5,8 +5,7 @@ import os
 import time
 import numpy as np
 import torch
-
-from .nn import LossNN
+from .nn import Algorithm
 from .utils import timing, cross_entropy_loss
 
 class Brain:
@@ -120,6 +119,8 @@ class Brain:
             def save_data(fname, data):
                 if isinstance(data, dict):
                     np.savez_compressed(path + '/' + fname, **data)
+                elif isinstance(data, list) or isinstance(data, tuple):
+                    np.savez_compressed(path + '/' + fname, *data)
                 else:
                     np.save(path + '/' + fname, data)
             save_data('X_train', self.data.X_train_np)
@@ -155,7 +156,7 @@ class Brain:
             raise NotImplementedError
     
     def __init_criterion(self):
-        if isinstance(self.net, LossNN):
+        if isinstance(self.net, Algorithm):
             self.__criterion = self.net.criterion
             if self.criterion is not None:
                 import warnings

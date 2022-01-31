@@ -3,7 +3,6 @@
 """
 import numpy as np
 import matplotlib.pyplot as plt
-
 import learner as ln
 from learner.utils import softmax
 
@@ -35,8 +34,7 @@ def plot(data, net):
 def main():
     device = 'cpu' # 'cpu' or 'gpu'
     # FNN
-    depth = 3
-    width = 30
+    size = [1, 30, 30, 2]
     activation = 'relu'
     # training
     lr = 0.01
@@ -44,7 +42,7 @@ def main():
     print_every = 100
     
     data = CSData()
-    net = ln.nn.FNN(data.dim, data.K, depth, width, activation)
+    net = ln.nn.FNN(size, activation)
     args = {
         'data': data,
         'net': net,

@@ -1,9 +1,10 @@
 """
 @author: jpzxshi
 """
+import sys
+sys.path.append('..')
 import numpy as np
 import matplotlib.pyplot as plt
-
 import learner as ln
 from learner.integrator.hamiltonian import SV
 

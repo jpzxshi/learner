@@ -3,7 +3,6 @@
 """
 import numpy as np
 import matplotlib.pyplot as plt
-
 import learner as ln
 
 def plot(data, net):
@@ -21,8 +20,7 @@ def plot(data, net):
 def main():
     device = 'cpu' # 'cpu' or 'gpu'
     # FNN
-    depth = 3
-    width = 30
+    size = [1, 30, 30, 1]
     activation = 'relu'
     # training
     lr = 0.01
@@ -35,7 +33,7 @@ def main():
     y_test = np.sin(X_test)
     
     data = ln.Data(X_train=X_train, y_train=y_train, X_test=X_test, y_test=y_test)
-    net = ln.nn.FNN(data.dim, data.K, depth, width, activation)
+    net = ln.nn.FNN(size, activation)
     args = {
         'data': data,
         'net': net,

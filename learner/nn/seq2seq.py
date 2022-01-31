@@ -2,13 +2,12 @@
 @author: jpzxshi
 """
 import torch
+from .module import Map
 
-from .module import StructureNN
-
-class S2S(StructureNN):
+class S2S(Map):
     '''Seq2seq model.
-    Input: [batch size, len_in, dim_in]
-    Output: [batch size, len_out, dim_out]
+    Input: [batch_size, len_in, dim_in]
+    Output: [batch_size, len_out, dim_out]
     '''
     def __init__(self, dim_in, len_in, dim_out, len_out, hidden_size=10, cell='LSTM'):
         super(S2S, self).__init__()

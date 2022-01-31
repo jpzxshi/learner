@@ -2,8 +2,8 @@
 @author: jpzxshi
 """
 from .module import Module
-from .module import StructureNN
-from .module import LossNN
+from .module import Map
+from .module import Algorithm
 from .fnn import FNN
 from .hnn import HNN
 from .sympnet import LASympNet
@@ -18,8 +18,8 @@ from .pnn import AEPNN
 
 __all__ = [
     'Module',
-    'StructureNN',
-    'LossNN',
+    'Map',
+    'Algorithm',
     'FNN',
     'HNN',
     'LASympNet',

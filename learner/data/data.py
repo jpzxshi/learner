@@ -3,7 +3,6 @@
 """
 import numpy as np
 import torch
-
 from ..utils import map_elementwise
 
 class Data:
@@ -25,7 +24,7 @@ class Data:
         @map_elementwise
         def batch(X, mask):
             return X[mask]
-        mask = batch_mask(self.X_train, batch_size)
+        mask = batch_mask(self.y_train, batch_size)
         return batch(self.X_train, mask), batch(self.y_train, mask)
     
     @property

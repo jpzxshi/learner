@@ -2,10 +2,9 @@
 @author: jpzxshi
 """
 import torch
+from .module import Map, Algorithm
 
-from .module import StructureNN, LossNN
-
-class PNN(StructureNN):
+class PNN(Map):
     '''INN-based Poisson neural network.
     '''
     def __init__(self, inn, sympnet, recurrent=1):
@@ -23,9 +22,7 @@ class PNN(StructureNN):
         return self.inn.inverse(x)
     
     def predict(self, x, steps=1, keepinitx=False, returnnp=False):
-        if not isinstance(x, torch.Tensor):
-            x = torch.tensor(x, dtype=self.dtype, device=self.device)
-        dim = x.size(-1)
+        x = self._to_tensor(x)
         size = len(x.size())
         pred = [self.inn(x)]
         for _ in range(steps):
@@ -37,10 +34,10 @@ class PNN(StructureNN):
             pred = pred[1:]
         res = torch.cat(pred, dim=-1)
         if steps > 1:
-            res = res.view([-1, steps, dim][2 - size:])
+            res = res.view([-1, steps, self.dim][2 - size:])
         return res.cpu().detach().numpy() if returnnp else res
     
-class AEPNN(LossNN):
+class AEPNN(Algorithm):
     '''Autoencoder-based Poisson neural network.
     '''
     def __init__(self, ae, sympnet, lam=1, recurrent=1):
@@ -49,6 +46,8 @@ class AEPNN(LossNN):
         self.sympnet = sympnet
         self.lam = lam
         self.recurrent = recurrent
+        
+        self.dim = ae.encoder_size[0]
     
     def criterion(self, X, y):
         X_latent, y_latent = self.ae.encode(X), self.ae.encode(y)
@@ -60,9 +59,7 @@ class AEPNN(LossNN):
         return symp_loss + self.lam * ae_loss
     
     def predict(self, x, steps=1, keepinitx=False, returnnp=False):
-        if not isinstance(x, torch.Tensor):
-            x = torch.tensor(x, dtype=self.dtype, device=self.device)
-        dim = x.size(-1)
+        x = self._to_tensor(x)
         size = len(x.size())
         pred = [self.ae.encode(x)]
         for _ in range(steps):
@@ -74,5 +71,5 @@ class AEPNN(LossNN):
             pred = pred[1:]
         res = torch.cat(pred, dim=-1)
         if steps > 1:
-            res = res.view([-1, steps, dim][2 - size:])
+            res = res.view([-1, steps, self.dim][2 - size:])
         return res.cpu().detach().numpy() if returnnp else res

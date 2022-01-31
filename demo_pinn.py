@@ -2,7 +2,6 @@
 @author: jpzxshi
 """
 import numpy as np
-
 import learner as ln
 from learner.utils import mse, grad
 
@@ -39,7 +38,7 @@ class PoissonData(ln.Data):
         self.X_train, self.y_train = self.generate(self.train_num)
         self.X_test, self.y_test = self.generate(self.test_num)
         
-class PoissonPINN(ln.nn.LossNN):
+class PoissonPINN(ln.nn.Algorithm):
     '''Physics-informed neural networks for solving the Poisson equation
     u_xx + u_yy = f(x,y),
     with boundary condition u(x,0), u(x,1), u(0,y), u(1,y).
@@ -91,8 +90,7 @@ def main():
     train_num = {'diff': 100, 'x_0': 10, 'x_1': 10, '0_y': 10, '1_y': 10}
     test_num = {'diff': 900, 'x_0': 30, 'x_1': 30, '0_y': 30, '1_y': 30}
     # fnn
-    depth = 2
-    width = 20
+    size = [2, 20, 1]
     activation = 'sigmoid'
     # training
     lr = 0.001
@@ -101,7 +99,7 @@ def main():
     batch_size = None # {'diff': 100, 'x_0': 10, 'x_1': 10, '0_y': 10, '1_y': 10}
     
     data = PoissonData(train_num, test_num)
-    fnn = ln.nn.FNN(2, 1, depth, width, activation)
+    fnn = ln.nn.FNN(size, activation)
     net = PoissonPINN(fnn)
     args = {
         'data': data,
