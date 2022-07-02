@@ -36,10 +36,6 @@ class Brain:
         return cls.brain.loss_history
     
     @classmethod
-    def Encounter_nan(cls):
-        return cls.brain.encounter_nan
-    
-    @classmethod
     def Best_model(cls):
         return cls.brain.best_model
     
@@ -59,7 +55,6 @@ class Brain:
         self.device = device
         
         self.loss_history = None
-        self.encounter_nan = False
         self.best_model = None
         
         self.__optimizer = None
@@ -71,29 +66,36 @@ class Brain:
         print('Training...', flush=True)
         loss_history = []
         for i in range(self.iterations + 1):
-            if self.batch_size is not None:
-                X_train, y_train = self.data.get_batch(self.batch_size)
-                loss = self.__criterion(self.net(X_train), y_train)
+            if self.batch_size is None:
+                X_train, y_train = self.data.X_train, self.data.y_train
             else:
-                loss = self.__criterion(self.net(self.data.X_train), self.data.y_train)
+                X_train, y_train = self.data.get_batch(self.batch_size)                    
             if i % self.print_every == 0 or i == self.iterations:
+                loss_train = self.__criterion(self.net(X_train), y_train)
                 loss_test = self.__criterion(self.net(self.data.X_test), self.data.y_test)
-                loss_history.append([i, loss.item(), loss_test.item()])
-                print('{:<9}Train loss: {:<25}Test loss: {:<25}'.format(i, loss.item(), loss_test.item()), flush=True)
-                if torch.any(torch.isnan(loss)):
-                    self.encounter_nan = True
-                    print('Encountering nan, stop training', flush=True)
-                    return None
+                loss_history.append([i, loss_train.item(), loss_test.item()])
+                print('{:<9}Train loss: {:<25}Test loss: {:<25}'.format(i, loss_train.item(), loss_test.item()), flush=True)
+                if torch.any(torch.isnan(loss_train)):
+                    raise RuntimeError('encountering nan, stop training')
                 if self.save:
                     if not os.path.exists('model'): os.mkdir('model')
                     torch.save(self.net, 'model/model{}.pkl'.format(i))
-                if self.callback is not None: 
+                if self.callback is not None:
                     to_stop = self.callback(self.data, self.net)
                     if to_stop: break
             if i < self.iterations:
-                self.__optimizer.zero_grad()
-                loss.backward()
-                self.__optimizer.step()
+                if self.optimizer in ['LBFGS']:
+                    def closure():
+                        self.__optimizer.zero_grad()
+                        loss = self.__criterion(self.net(X_train), y_train)
+                        loss.backward()
+                        return loss
+                    self.__optimizer.step(closure)
+                else:
+                    self.__optimizer.zero_grad()
+                    loss = self.__criterion(self.net(X_train), y_train)
+                    loss.backward()
+                    self.__optimizer.step()
         self.loss_history = np.array(loss_history)
         print('Done!', flush=True)
         return self.loss_history
@@ -140,7 +142,6 @@ class Brain:
     
     def __init_brain(self):
         self.loss_history = None
-        self.encounter_nan = False
         self.best_model = None
         self.data.device = self.device
         self.data.dtype = self.dtype
@@ -152,6 +153,8 @@ class Brain:
     def __init_optimizer(self):
         if self.optimizer == 'adam':
             self.__optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr)
+        elif self.optimizer == 'LBFGS':
+            self.__optimizer = torch.optim.LBFGS(self.net.parameters(), lr=self.lr)
         else:
             raise NotImplementedError
     

@@ -15,6 +15,7 @@ from .autoencoder import AE
 from .inn import INN
 from .pnn import PNN
 from .pnn import AEPNN
+from .mionet import MIONet
 
 __all__ = [
     'Module',
@@ -31,4 +32,5 @@ __all__ = [
     'INN',
     'PNN',
     'AEPNN',
+    'MIONet',
 ]
