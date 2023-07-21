@@ -73,29 +73,33 @@ class Data:
     
     @property
     def X_train_np(self):
-        return Data.to_np(self.X_train)
+        return Data.tc_to_np(self.X_train)
     
     @property
     def y_train_np(self):
-        return Data.to_np(self.y_train)
+        return Data.tc_to_np(self.y_train)
     
     @property
     def X_test_np(self):
-        return Data.to_np(self.X_test)
+        return Data.tc_to_np(self.X_test)
     
     @property
     def y_test_np(self):
-        return Data.to_np(self.y_test)
+        return Data.tc_to_np(self.y_test)
     
     @staticmethod
     @map_elementwise
-    def to_np(d):
-        if isinstance(d, np.ndarray) or d is None:
-            return d
-        elif isinstance(d, torch.Tensor):
+    def tc_to_np(d):
+        if isinstance(d, torch.Tensor):
             return d.cpu().detach().numpy()
         else:
-            raise ValueError
+            return d
+        #if isinstance(d, np.ndarray) or d is None:
+        #    return d
+        #elif isinstance(d, torch.Tensor):
+        #    return d.cpu().detach().numpy()
+        #else:
+        #    raise ValueError
     
     def __to_cpu(self):
         @map_elementwise
@@ -104,6 +108,8 @@ class Data:
                 return torch.DoubleTensor(d)
             elif isinstance(d, torch.Tensor):
                 return d.cpu()
+            else:                 ####
+                return d          ####
         for d in ['X_train', 'y_train', 'X_test', 'y_test']:
             setattr(self, d, trans(getattr(self, d)))
     
@@ -114,6 +120,8 @@ class Data:
                 return torch.cuda.DoubleTensor(d)
             elif isinstance(d, torch.Tensor):
                 return d.cuda()
+            else:                 ####
+                return d          ####
         for d in ['X_train', 'y_train', 'X_test', 'y_test']:
             setattr(self, d, trans(getattr(self, d)))
     
@@ -124,6 +132,8 @@ class Data:
         def trans(d):
             if isinstance(d, torch.Tensor):
                 return d.float()
+            else:                 ####
+                return d          ####
         for d in ['X_train', 'y_train', 'X_test', 'y_test']:
             setattr(self, d, trans(getattr(self, d)))
     
@@ -134,5 +144,7 @@ class Data:
         def trans(d):
             if isinstance(d, torch.Tensor):
                 return d.double()
+            else:                 ####
+                return d          ####
         for d in ['X_train', 'y_train', 'X_test', 'y_test']:
             setattr(self, d, trans(getattr(self, d)))
