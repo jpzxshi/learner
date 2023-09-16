@@ -16,6 +16,7 @@ class Brain:
     @classmethod
     def Init(cls, data, net, criterion, optimizer, lr, iterations, batch_size=None, 
              print_every=1000, save=False, callback=None, dtype='float', device='cpu'):
+        cls.Clear()
         cls.brain = cls(data, net, criterion, optimizer, lr, iterations, batch_size, 
                          print_every, save, callback, dtype, device)
     
@@ -38,6 +39,10 @@ class Brain:
     @classmethod
     def Best_model(cls):
         return cls.brain.best_model
+    
+    @classmethod
+    def Clear(cls):
+        cls.brain = None
     
     def __init__(self, data, net, criterion, optimizer, lr, iterations, batch_size, 
                  print_every, save, callback, dtype, device):
@@ -118,17 +123,7 @@ class Brain:
             path = './outputs/' + time.strftime('%Y-%m-%d-%H-%M-%S',time.localtime(time.time()))
         if not os.path.isdir(path): os.makedirs(path)
         if data:
-            def save_data(fname, data):
-                if isinstance(data, dict):
-                    np.savez_compressed(path + '/' + fname, **data)
-                elif isinstance(data, list) or isinstance(data, tuple):
-                    np.savez_compressed(path + '/' + fname, *data)
-                else:
-                    np.save(path + '/' + fname, data)
-            save_data('X_train', self.data.X_train_np)
-            save_data('y_train', self.data.y_train_np)
-            save_data('X_test', self.data.X_test_np)
-            save_data('y_test', self.data.y_test_np)
+            self.data.save(path)
         if best_model:
             torch.save(self.best_model, path + '/model_best.pkl')
         if loss_history:

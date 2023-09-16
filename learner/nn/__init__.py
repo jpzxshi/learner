@@ -16,6 +16,7 @@ from .inn import INN
 from .pnn import PNN
 from .pnn import AEPNN
 from .mionet import MIONet
+from .mionet import MIONet_Cartesian
 
 __all__ = [
     'Module',
@@ -33,4 +34,5 @@ __all__ = [
     'PNN',
     'AEPNN',
     'MIONet',
+    'MIONet_Cartesian',
 ]

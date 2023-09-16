@@ -1,6 +1,7 @@
 """
 @author: jpzxshi
 """
+import os
 import numpy as np
 import torch
 from ..utils import map_elementwise
@@ -26,6 +27,20 @@ class Data:
             return X[mask]
         mask = batch_mask(self.y_train, batch_size)
         return batch(self.X_train, mask), batch(self.y_train, mask)
+
+    def save(self, path):
+        if not os.path.isdir(path): os.makedirs(path)
+        def save_data(fname, data):
+            if isinstance(data, dict):
+                np.savez_compressed(path + '/' + fname, **data)
+            elif isinstance(data, list) or isinstance(data, tuple):
+                np.savez_compressed(path + '/' + fname, *data)
+            else:
+                np.save(path + '/' + fname, data)
+        save_data('X_train', self.X_train_np)
+        save_data('y_train', self.y_train_np)
+        save_data('X_test', self.X_test_np)
+        save_data('y_test', self.y_test_np)
     
     @property
     def device(self):
