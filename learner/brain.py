@@ -70,6 +70,7 @@ class Brain:
         self.__init_brain()
         print('Training...', flush=True)
         loss_history = []
+        best_model_index = 0
         for i in range(self.iterations + 1):
             if self.batch_size is None:
                 X_train, y_train = self.data.X_train, self.data.y_train
@@ -82,9 +83,19 @@ class Brain:
                 print('{:<9}Train loss: {:<25}Test loss: {:<25}'.format(i, loss_train.item(), loss_test.item()), flush=True)
                 if torch.any(torch.isnan(loss_train)):
                     raise RuntimeError('encountering nan, stop training')
-                if self.save:
+                if self.save == False:
+                    pass
+                elif self.save in [True, 'best_only', 'best_only_test', 'best_only_train', 'all']:
                     if not os.path.exists('model'): os.mkdir('model')
-                    torch.save(self.net, 'model/model{}.pkl'.format(i))
+                    if self.save == 'all': 
+                        torch.save(self.net, 'model/model{}.pkl'.format(i))
+                    else:
+                        index_temp = 1 if self.save == 'best_only_train' else 2
+                        if loss_history[-1][index_temp] < loss_history[best_model_index][index_temp] or len(loss_history) == 1:
+                            best_model_index = len(loss_history) - 1
+                            torch.save(self.net, 'model/model_best.pkl')
+                else:
+                    raise ValueError
                 if self.callback is not None:
                     to_stop = self.callback(self.data, self.net)
                     if to_stop: break
@@ -106,16 +117,18 @@ class Brain:
         return self.loss_history
     
     def restore(self):
-        if self.loss_history is not None and self.save == True:
-            best_loss_index = np.argmin(self.loss_history[:, 1])
+        if self.loss_history is not None and self.save != False:
+            index_temp = 1 if self.save == 'best_only_train' else 2
+            best_loss_index = np.argmin(self.loss_history[:, index_temp])
             iteration = int(self.loss_history[best_loss_index, 0])
             loss_train = self.loss_history[best_loss_index, 1]
             loss_test = self.loss_history[best_loss_index, 2]
             print('Best model at iteration {}:'.format(iteration), flush=True)
             print('Train loss:', loss_train, 'Test loss:', loss_test, flush=True)
-            self.best_model = torch.load('model/model{}.pkl'.format(iteration))
+            path = 'model/model{}.pkl'.format(iteration) if self.save == 'all' else 'model/model_best.pkl'
+            self.best_model = torch.load(path)
         else:
-            raise RuntimeError('restore before running or without saved models')
+            raise RuntimeError('restore before running or without saved model')
         return self.best_model
     
     def output(self, data, best_model, loss_history, info, path, **kwargs):
@@ -146,7 +159,7 @@ class Brain:
         self.__init_criterion()
     
     def __init_optimizer(self):
-        if self.optimizer == 'adam':
+        if self.optimizer in ['Adam', 'adam']:
             self.__optimizer = torch.optim.Adam(self.net.parameters(), lr=self.lr)
         elif self.optimizer == 'LBFGS':
             self.__optimizer = torch.optim.LBFGS(self.net.parameters(), lr=self.lr)
