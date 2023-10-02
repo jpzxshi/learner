@@ -35,7 +35,7 @@ class FNN(Map):
     
     def __initialize(self):
         for i in range(1, len(self.size)):
-            if self.size[i] != 0: 
+            if self.size[i] != 0:
                 self.weight_init_(self.ms['LinM{}'.format(i)].weight)
                 if self.size[i] > 0:
-                    nn.init.constant_(self.ms['LinM{}'.format(i)].bias, 0)
+                    self.bias_init_(self.ms['LinM{}'.format(i)].bias)

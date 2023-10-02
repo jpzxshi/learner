@@ -18,6 +18,9 @@ def timing(func):
         return result
     return wrapper
 
+def str_current_time():
+    return time.strftime('%Y-%m-%d-%H-%M-%S', time.localtime(time.time()))
+
 def map_elementwise(func):
     @wraps(func)
     def wrapper(*args, **kwargs):

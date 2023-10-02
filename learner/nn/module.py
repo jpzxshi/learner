@@ -71,9 +71,9 @@ class Module(torch.nn.Module):
 
     @property
     def weight_init_(self):
-        if callable(self.initializer):
-            return self.initializer
-        elif self.initializer == 'He normal':
+        #if callable(self.initializer):
+        #    return self.initializer
+        if self.initializer == 'He normal':
             return torch.nn.init.kaiming_normal_
         elif self.initializer == 'He uniform':
             return torch.nn.init.kaiming_uniform_
@@ -84,12 +84,26 @@ class Module(torch.nn.Module):
         elif self.initializer == 'orthogonal':
             return torch.nn.init.orthogonal_
         elif self.initializer == 'default':
-            if self.activation == 'relu':
-                return torch.nn.init.kaiming_normal_
-            elif self.activation == 'tanh':
-                return torch.nn.init.orthogonal_
-            else:
-                return lambda x: None
+            return lambda x: None
+        else:
+            raise NotImplementedError
+            
+    @property
+    def bias_init_(self):
+        #if callable(self.initializer):
+        #    return self.initializer
+        if self.initializer == 'He normal':
+            return torch.nn.init.zeros_
+        elif self.initializer == 'He uniform':
+            return torch.nn.init.zeros_
+        elif self.initializer == 'Glorot normal':
+            return torch.nn.init.zeros_
+        elif self.initializer == 'Glorot uniform':
+            return torch.nn.init.zeros_
+        elif self.initializer == 'orthogonal':
+            return torch.nn.init.zeros_
+        elif self.initializer == 'default':
+            return lambda x: None
         else:
             raise NotImplementedError
             
