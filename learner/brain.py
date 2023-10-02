@@ -171,7 +171,7 @@ class Brain:
                     f.write('{}: {}\n'.format(key, str(arg)))
         for key, arg in kwargs.items():
             np.savetxt(path + '/' + key + '.txt', arg)
-        print('The result(s) have been output to dir \'' + path + '\'', flush=True)
+        print('The results have been output to dir \'' + path + '\'', flush=True)
     
     def __init_brain(self):
         self.loss_history = None
