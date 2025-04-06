@@ -145,7 +145,7 @@ class Brain:
             print('Best model at iteration {}:'.format(iteration), flush=True)
             print('Train loss:', loss_train, 'Test loss:', loss_test, flush=True)
             path = 'model/model{}.pkl'.format(iteration) if self.save == 'all' else 'model/model_best.pkl'
-            self.best_model = torch.load(path)
+            self.best_model = torch.load(path, weights_only=False)
             self.net = self.best_model
         else:
             raise RuntimeError('restore before running or without saved model')
