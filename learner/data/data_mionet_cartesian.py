@@ -19,4 +19,7 @@ class Data_MIONet_Cartesian(Data):
         def batch(X, mask):
             return X[mask]
         mask = batch_mask(self.y_train, batch_size)
-        return (*batch(self.X_train[:-1], mask), self.X_train[-1]), batch(self.y_train, mask)
+        if len(self.X_train[-1].size()) == 3:
+            return batch(self.X_train, mask), batch(self.y_train, mask)
+        else:
+            return (*batch(self.X_train[:-1], mask), self.X_train[-1]), batch(self.y_train, mask)

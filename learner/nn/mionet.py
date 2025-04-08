@@ -7,7 +7,7 @@ from .fnn import FNN
 
 class MIONet(Map):
     '''Multiple-input operator network.
-    Input: ([batch, sensors1], [batch, sensors2], [batch, dim_loc])
+    Input: ([batch, sensors1], [batch, sensors2],..., [batch, dim_loc])
     Output: [batch, 1]
     '''
     def __init__(self, sizes, activation='relu', initializer='default', bias=True):
@@ -39,7 +39,7 @@ class MIONet(Map):
     
 class MIONet_Cartesian(Map):
     '''Multiple-input operator network (Cartesian product version).
-    Input: ([batch, sensors1], [batch, sensors2], [num_loc, dim_loc])
+    Input: ([batch, sensors1], [batch, sensors2],..., [(batch,) num_loc, dim_loc])
     Output: [batch, num_loc]
     '''
     def __init__(self, sizes, activation='relu', initializer='default', bias=True):
@@ -56,7 +56,10 @@ class MIONet_Cartesian(Map):
         y1 = torch.stack([self.ms['Net{}'.format(i + 1)](x[i]) for i in range(len(self.sizes) - 1)])
         y1 = torch.prod(y1, dim=0)
         y2 = self.ms['Net{}'.format(len(self.sizes))](x[-1])
-        y = y1 @ y2.t()
+        if len(y2.size()) == 3:
+            y = torch.einsum('ij,ikj->ik', y1, y2)
+        else:
+            y = y1 @ y2.t()
         return y + self.ps['bias'] if self.bias else y
     
     def __init_modules(self):
