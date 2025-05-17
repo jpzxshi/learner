@@ -1,5 +1,5 @@
 """
-@author: jpzxshi
+@author: Pengzhan Jin (jpz@pku.edu.cn)
 """
 from .module import Module
 from .module import Map
@@ -17,6 +17,7 @@ from .pnn import PNN
 from .pnn import AEPNN
 from .mionet import MIONet
 from .mionet import MIONet_Cartesian
+from .mionet import MIONet_precomp
 
 __all__ = [
     'Module',
@@ -35,4 +36,5 @@ __all__ = [
     'AEPNN',
     'MIONet',
     'MIONet_Cartesian',
+    'MIONet_precomp',
 ]
