@@ -95,9 +95,13 @@ class Brain:
             else:
                 X_train, y_train = self.data.get_batch(self.batch_size)
             if i % self.print_every == 0 or i == self.iterations:
-                with torch.inference_mode():
+                if isinstance(self.net, Algorithm):
                     loss_train = self.__criterion(self.net(X_train), y_train)
                     loss_test = self.__criterion(self.net(self.data.X_test), self.data.y_test)
+                else:
+                    with torch.inference_mode():
+                        loss_train = self.__criterion(self.net(X_train), y_train)
+                        loss_test = self.__criterion(self.net(self.data.X_test), self.data.y_test)
                 loss_history.append([i, loss_train.item(), loss_test.item()])
                 print('{:<9}Train loss: {:<25}Test loss: {:<25}'.format(i, loss_train.item(), loss_test.item()), flush=True)
                 if torch.any(torch.isnan(loss_train)):
